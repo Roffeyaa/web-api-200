@@ -1,4 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
 using IssueTracker.Api.Catalog.Api;
+using IssueTracker.Api.Employees.Api;
+using IssueTracker.Api.Employees.Domain;
+using IssueTracker.Api.Employees.Services;
 using Marten;
 using Npgsql;
 
@@ -11,11 +15,19 @@ public static class Extensions
     {
         var services = host.Services;
         
+        // .net 8 and forward - good idea.
         services.AddSingleton<TimeProvider>(_ => TimeProvider.System);
-        
+        services.AddScoped<EmployeeRepository>();
+        services.AddScoped<IProcessCommandsForTheCurrentEmployee, CurrentEmployeeCommandProcessor>();
         services.AddAuthorization();
-        services.AddAuthentication().AddJwtBearer();
-        
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        services.AddAuthentication().AddJwtBearer(opts =>
+        {
+            
+            opts.MapInboundClaims = true;
+        });
+
+        // We'll use this later, for when our aggregates need to the context.
         services.AddHttpContextAccessor();
         
         var connectionString = host.Configuration.GetConnectionString("postgres") ?? throw new InvalidOperationException("No connection string found");
@@ -37,6 +49,7 @@ public static class Extensions
     public static IEndpointRouteBuilder MapIssueTracker(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapCatalog();
+        endpoints.MapEmployees();
   
         return endpoints;
     }

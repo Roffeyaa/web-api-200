@@ -1,0 +1,16 @@
+@ProtoType.Api_HostAddress = http://localhost:5213
+
+GET {{ProtoType.Api_HostAddress}}/french-toast
+Accept: application/json
+
+###
+
+
+
+GET {{ProtoType.Api_HostAddress}}/cinnamon-roll
+Accept: application/json
+
+###
+
+
+GET {{ProtoType.Api_HostAddress}}/multi/hypertheory
